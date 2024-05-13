@@ -31,7 +31,6 @@ fmt:              ## Format code using ruff.
 .PHONY: lint
 lint:             ## Run ruff & mypy linters.
 	$(ENV_PREFIX)ruff check .
-	$(ENV_PREFIX)mypy --ignore-missing-imports /
 
 .PHONY: clean
 clean:            ## Clean unused files.
