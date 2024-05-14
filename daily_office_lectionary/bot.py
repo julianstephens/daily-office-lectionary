@@ -1,4 +1,5 @@
 import json
+import pytz
 import os
 from datetime import datetime
 from typing import Literal
@@ -45,11 +46,12 @@ async def morning(interaction: discord.Interaction):
         lectionary = json.load(f)
 
     await interaction.response.send_message(
-        f"**Morning Lessons for {datetime.now().strftime('%A, %B %d, %Y')}**\n"
+        f"**Morning Lessons for {datetime.now(pytz.timezone('US/Eastern')).strftime('%A, %B %d, %Y')}**\n"
         + format_reading(
             list(
                 filter(
-                    lambda x: x["date"] == datetime.now().strftime("%Y-%m-%d"),
+                    lambda x: x["date"]
+                    == datetime.now(pytz.timezone("US/Eastern")).strftime("%Y-%m-%d"),
                     lectionary,
                 )
             )[0]
@@ -73,11 +75,12 @@ async def evening(interaction: discord.Interaction):
         lectionary = json.load(f)
 
     await interaction.response.send_message(
-        f"**Evening Lessons for {datetime.now().strftime('%A, %B %d, %Y')}**\n"
+        f"**Evening Lessons for {datetime.now(pytz.timezone('US/Eastern')).strftime('%A, %B %d, %Y')}**\n"
         + format_reading(
             list(
                 filter(
-                    lambda x: x["date"] == datetime.now().strftime("%Y-%m-%d"),
+                    lambda x: x["date"]
+                    == datetime.now(pytz.timezone("US/Eastern")).strftime("%Y-%m-%d"),
                     lectionary,
                 )
             )[0],
