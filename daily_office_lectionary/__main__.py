@@ -1,6 +1,7 @@
-from .bot import client
-from .config import conf
 import logging
+
+from daily_office_lectionary.bot import client
+from daily_office_lectionary.config import conf
 
 handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
 
