@@ -36,13 +36,6 @@ def format_reading(reading: dict, time: Literal["mp", "ep"] = "mp") -> str:
     )
 
 
-def format_oos(oos: dict):
-    res = ""
-    for k, v in oos.items():
-        res += f"{k} => {v}\n"
-    return res
-
-
 def to_camel(*args):
     first = args[0].lower()
     rest = [x.title() for x in args[1:]]
@@ -84,12 +77,12 @@ and for ever. Amen."""
     weekday = datetime.now().strftime("%A")
     name = dayinfo["name"]  # type: ignore
 
-    if name:  # type: ignore
+    if name:
         dname = (
             name.lower()
             if len(name.strip().split(" ")) == 1
             else to_camel(*name.split(" "))
-        )  # type: ignore
+        )
         potentials = [dname, dname + "I", dname + "II", dname + "III"]
         res = db.mget(*potentials)
         filtered_res = [str(r, "utf-8") for r in list(filter(lambda x: x, res))]  # type: ignore
