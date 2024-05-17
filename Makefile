@@ -1,6 +1,4 @@
 .ONESHELL:
-ENV_PREFIX=$(shell python -c "if __import__('pathlib').Path('.venv/bin/pip').exists(): print('.venv/bin/')")
-USING_POETRY=$(shell grep "tool.poetry" pyproject.toml && echo "yes")
 
 .PHONY: help
 help:             ## Show the help.
@@ -10,27 +8,14 @@ help:             ## Show the help.
 	@fgrep "##" Makefile | fgrep -v fgrep
 
 
-.PHONY: show
-show:             ## Show the current environment.
-	@echo "Current environment:"
-	@if [ "$(USING_POETRY)" ]; then poetry env info && exit; fi
-	@echo "Running using $(ENV_PREFIX)"
-	@$(ENV_PREFIX)python -V
-	@$(ENV_PREFIX)python -m site
-
-.PHONY: install
-install:          ## Install the project in dev mode.
-	@if [ "$(USING_POETRY)" ]; then poetry install && exit; fi
-	@echo "Don't forget to run 'make venv' if you got errors."
-	$(ENV_PREFIX)pip install -e .[test]
-
 .PHONY: fmt
 fmt:              ## Format code using ruff.
-	$(ENV_PREFIX)ruff format .
+	@ruff check --fix --select I .
+	@ruff format --line-length=88 .
 
 .PHONY: lint
 lint:             ## Run ruff & mypy linters.
-	$(ENV_PREFIX)ruff check .
+	@ruff check --select 'W,E,F,B,N,RET,SIM,G,TRY,LOG,RUF' .
 
 .PHONY: clean
 clean:            ## Clean unused files.
@@ -45,37 +30,3 @@ clean:            ## Clean unused files.
 	@rm -rf *.egg-info
 	@rm -rf htmlcov
 	@rm -rf .tox/
-
-.PHONY: venv
-venv:       ## Create a virtual environment.
-	@if [ "$(USING_POETRY)" ]; then poetry install && exit; fi
-	@echo "creating virtualenv ..."
-	@rm -rf .venv
-	@python3 -m venv .venv
-	@./.venv/bin/pip install -U pip
-	@./.venv/bin/pip install -e .[test]
-	@echo
-	@echo "!!! Please run 'source .venv/bin/activate' to enable the environment !!!"
-
-.PHONY: switch-to-poetry
-switch-to-poetry: ## Switch to poetry package manager.
-	@echo "Switching to poetry ..."
-	@if ! poetry --version > /dev/null; then echo 'poetry is required, install from https://python-poetry.org/'; exit 1; fi
-	@rm -rf .venv
-	@poetry init --no-interaction --name=a_flask_test --author=rochacbruno
-	@echo "" >> pyproject.toml
-	@echo "[tool.poetry.scripts]" >> pyproject.toml
-	@echo " = '.__main__:main'" >> pyproject.toml
-	@cat requirements.txt | while read in; do poetry add --no-interaction "$${in}"; done
-	@cat requirements-test.txt | while read in; do poetry add --no-interaction "$${in}" --dev; done
-	@poetry install --no-interaction
-	@mkdir -p .github/backup
-	@mv requirements* .github/backup
-	@mv setup.py .github/backup
-	@echo "You have switched to https://python-poetry.org/ package manager."
-	@echo "Please run 'poetry shell' or 'poetry run '"
-
-# This file has been generated from rochacbruno/python-project-template
-# __author__ = 'rochacbruno'
-# __repo__ = https://github.com/rochacbruno/python-project-template
-# __sponsor__ = https://github.com/sponsors/rochacbruno/

@@ -1,5 +1,4 @@
 import json
-import logging
 import random
 from datetime import datetime
 from typing import Literal
@@ -34,6 +33,24 @@ def format_reading(reading: dict, time: Literal["mp", "ep"] = "mp") -> str:
         f"Reading 1: {reading[time+'_1']}\n"
         f"Reading 2: {reading[time+'_2']}"
     )
+
+
+async def send_reading_message(
+    interaction: discord.Interaction, time: Literal["mp", "ep"] = "mp"
+):
+    res = db.get(datetime.now().strftime("%Y-%m-%d"))
+    if res:
+        json_data = json.loads(str(res, "utf-8"))  # type: ignore
+        await interaction.response.send_message(
+            (
+                f"**{'Morning' if time == 'mp' else 'Evening'} Lessons for "
+                f"{datetime.now(pytz.timezone('US/Eastern')).strftime('%A, %B %d, %Y')}"
+                "**\n"
+            )
+            + format_reading(json_data, time)
+        )
+    else:
+        await interaction.response.send_message("Something went wrong")
 
 
 def to_camel(*args):
@@ -88,7 +105,7 @@ and for ever. Amen."""
         filtered_res = [str(r, "utf-8") for r in list(filter(lambda x: x, res))]  # type: ignore
         if len(filtered_res) == 1:
             return filtered_res[0]
-        elif len(filtered_res) > 1:
+        if len(filtered_res) > 1:
             return filtered_res[random.randint(0, len(filtered_res) - 1)]
 
     if season.lower() == "easter" and week == 1:
@@ -97,14 +114,14 @@ and for ever. Amen."""
         return str(res, "utf-8") if res else collects[0]  # type: ignore
 
     id = to_camel(season, week, weekday)
-    backupId = to_camel(season, week, "sunday")
+    backup_id = to_camel(season, week, "sunday")
 
     res = db.get(id)
-    bres = db.get(backupId)
+    bres = db.get(backup_id)
 
     if not res and bres and len(collects) == 1:
         return str(bres, "utf-8")  # type: ignore
-    elif res:
+    if res:
         return str(res, "utf-8")  # type: ignore
 
     return (
@@ -118,33 +135,19 @@ and for ever. Amen."""
 async def collect(interaction: discord.Interaction):
     res = get_collect()
     await interaction.response.send_message(
-        f"**Collect of the Day for {datetime.now(pytz.timezone('US/Eastern')).strftime('%A, %B %d, %Y')}**\n"
+        (
+            "**Collect of the Day for "
+            f"{datetime.now(pytz.timezone('US/Eastern')).strftime('%A, %B %d, %Y')}**\n"
+        )
         + res
     )
 
 
 @client.tree.command()
 async def morning(interaction: discord.Interaction):
-    res = db.get(datetime.now().strftime("%Y-%m-%d"))
-    if res:
-        json_data = json.loads(str(res, "utf-8"))  # type: ignore
-        await interaction.response.send_message(
-            f"**Morning Lessons for {datetime.now(pytz.timezone('US/Eastern')).strftime('%A, %B %d, %Y')}**\n"
-            + format_reading(json_data)
-        )
-    else:
-        await interaction.response.send_message("Something went wrong")
+    await send_reading_message(interaction, "mp")
 
 
 @client.tree.command()
 async def evening(interaction: discord.Interaction):
-    res = db.get(datetime.now().strftime("%Y-%m-%d"))
-    if res:
-        json_data = json.loads(str(res, "utf-8"))  # type: ignore
-        logging.info(json_data)
-        await interaction.response.send_message(
-            f"**Evening Lessons for {datetime.now(pytz.timezone('US/Eastern')).strftime('%A, %B %d, %Y')}**\n"
-            + format_reading(json_data, "ep")
-        )
-    else:
-        await interaction.response.send_message("Something went wrong")
+    await send_reading_message(interaction, "ep")

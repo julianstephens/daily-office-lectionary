@@ -18,12 +18,13 @@ def create_collects_json():
     def is_date(text: str) -> bool:
         try:
             datetime.strptime(text, "%B %d")
-            return True
         except ValueError:
             return False
+        else:
+            return True
 
-    def is_page_break(pageNo: str, date: str) -> bool:
-        return pageNo.isdigit() and is_date(date.strip())
+    def is_page_break(page_num: str, date: str) -> bool:
+        return page_num.isdigit() and is_date(date.strip())
 
     def read_pdf() -> list[str]:
         from tika import parser
@@ -31,11 +32,10 @@ def create_collects_json():
         parsed: dict[str, str] = parser.from_file(
             path.join(DATA_DIR, "lm_great_cloud_of_witnesses.pdf")
         )  # type: ignore
-        lines = [
+        return [
             line.lstrip()
             for line in list(filter(lambda x: x, parsed["content"].split("\n")))
         ][DOC_START:DOC_END]
-        return lines
 
     def format_entries(lines: list[str]) -> dict[str, str]:
         entries = {}
