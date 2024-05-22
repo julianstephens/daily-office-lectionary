@@ -113,11 +113,14 @@ and for ever. Amen."""
         res = db.get(id)
         return str(res, "utf-8") if res else collects[0]  # type: ignore
 
-    id = to_camel(season, week, weekday)
-    backup_id = to_camel(season, week, "sunday")
-
-    res = db.get(id)
-    bres = db.get(backup_id)
+    res = None
+    bres = None
+    if season and week and weekday:
+        id = to_camel(season, week, weekday)
+        res = db.get(id)
+    if season and week:
+        backup_id = to_camel(season, week, "sunday")
+        bres = db.get(backup_id)
 
     if not res and bres and len(collects) == 1:
         return str(bres, "utf-8")  # type: ignore
