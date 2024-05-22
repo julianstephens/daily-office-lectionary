@@ -78,11 +78,13 @@ def get_collect(date=None):
     date_str = curr_date.strftime("%Y-%m-%d")
     data = db.get(date_str)
     collects = [
-        """Almighty and most merciful God, grant that by the indwelling
-of your Holy Spirit we may be enlightened and strengthened
-for your service; through Jesus Christ our Lord, who lives and
-reigns with you, in the unity of the Holy Spirit, one God, now
-and for ever. Amen."""
+        (
+            "O heavenly Father, who has filled the world with beauty: "
+            "Open our eyes to behold your gracious hand in all your works; that, "
+            "rejoicing in your whole creation, we may learn to serve you with gladness; "
+            "for the sake of him through whom all things were made, your Son Jesus Christ "
+            "the Lord. Amen."
+        )
     ]
     if data:
         json_data = json.loads(str(data, "utf-8"))  # type: ignore
